@@ -19,6 +19,7 @@ class Settings(BaseSettings):
     plate_confidence_threshold: float = 0.45
     yolo_model_path: str = "yolov8n.pt"
     cors_origins: list[str] = ["http://localhost:5173", "http://127.0.0.1:5173"]
+    cors_origin_regex: str | None = r"https://.*\.vercel\.app"
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
