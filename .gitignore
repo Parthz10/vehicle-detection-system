@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+.pytest_cache/
+*.pyc
+database/*.db
+uploads/vehicles/*
+uploads/plates/*
+uploads/videos/*
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+.env
