@@ -1,12 +1,10 @@
 import tempfile
 from pathlib import Path
 
-import cv2
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 
-from app.ai.pipeline import pipeline
 from app.api.deps import get_current_user, require_roles
 from app.db.session import get_db
 from app.models.entities import Camera, User, UserRole
@@ -16,6 +14,28 @@ from app.services.tracker import DuplicateTracker
 
 router = APIRouter(prefix="/streams", tags=["streams"])
 tracker = DuplicateTracker()
+
+
+def _load_cv2():
+    try:
+        import cv2
+    except ImportError as exc:
+        raise HTTPException(
+            status_code=503,
+            detail="Video processing is not available in this deployment. Install OpenCV/AI dependencies on a worker runtime.",
+        ) from exc
+    return cv2
+
+
+def _load_pipeline():
+    try:
+        from app.ai.pipeline import pipeline
+    except ImportError as exc:
+        raise HTTPException(
+            status_code=503,
+            detail="ANPR inference is not available in this deployment. Install YOLO/PaddleOCR dependencies on a worker runtime.",
+        ) from exc
+    return pipeline
 
 
 def _camera_source(camera: Camera):
@@ -35,6 +55,8 @@ def stream_camera(
         raise HTTPException(status_code=404, detail="Camera not found")
 
     def generate():
+        cv2 = _load_cv2()
+        pipeline = _load_pipeline()
         cap = cv2.VideoCapture(_camera_source(camera))
         if not cap.isOpened():
             raise HTTPException(status_code=400, detail="Unable to open camera source")
@@ -85,6 +107,8 @@ def upload_video(
     db: Session = Depends(get_db),
     _: User = Depends(require_roles(UserRole.administrator, UserRole.police_officer)),
 ):
+    cv2 = _load_cv2()
+    pipeline = _load_pipeline()
     suffix = Path(file.filename or "video.mp4").suffix
     with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as temp:
         temp.write(file.file.read())
@@ -134,6 +158,8 @@ def upload_frame(
     db: Session = Depends(get_db),
     _: User = Depends(require_roles(UserRole.administrator, UserRole.police_officer)),
 ):
+    cv2 = _load_cv2()
+    pipeline = _load_pipeline()
     content = file.file.read()
     import numpy as np
 
