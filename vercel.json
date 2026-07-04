@@ -1,9 +1,29 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "installCommand": "python -m pip install -r requirements-vercel.txt",
+  "installCommand": "npm ci --prefix frontend && python -m pip install -r requirements-vercel.txt",
+  "buildCommand": "npm run build --prefix frontend",
+  "outputDirectory": "frontend/dist",
   "functions": {
     "backend/app/main.py": {
       "maxDuration": 60
     }
-  }
+  },
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/backend/app/main.py"
+    },
+    {
+      "source": "/health",
+      "destination": "/backend/app/main.py"
+    },
+    {
+      "source": "/uploads/(.*)",
+      "destination": "/backend/app/main.py"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
 }
