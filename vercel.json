@@ -4,22 +4,22 @@
   "buildCommand": "npm run build --prefix frontend",
   "outputDirectory": "frontend/dist",
   "functions": {
-    "backend/app/main.py": {
+    "api/index.py": {
       "maxDuration": 60
     }
   },
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "/backend/app/main.py"
+      "destination": "/api/index.py"
     },
     {
       "source": "/health",
-      "destination": "/backend/app/main.py"
+      "destination": "/api/index.py"
     },
     {
       "source": "/uploads/(.*)",
-      "destination": "/backend/app/main.py"
+      "destination": "/api/index.py"
     },
     {
       "source": "/(.*)",
