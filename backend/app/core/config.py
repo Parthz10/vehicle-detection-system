@@ -1,9 +1,11 @@
 from functools import lru_cache
+import os
 from pathlib import Path
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
+RUNTIME_ROOT = Path("/tmp/anpr") if os.getenv("VERCEL") else PROJECT_ROOT
 
 
 class Settings(BaseSettings):
@@ -11,8 +13,8 @@ class Settings(BaseSettings):
     secret_key: str = "change-this-secret-key"
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 480
-    database_url: str = f"sqlite:///{PROJECT_ROOT / 'database' / 'anpr.db'}"
-    upload_dir: Path = PROJECT_ROOT / "uploads"
+    database_url: str = f"sqlite:///{RUNTIME_ROOT / 'database' / 'anpr.db'}"
+    upload_dir: Path = RUNTIME_ROOT / "uploads"
     vehicle_confidence_threshold: float = 0.35
     plate_confidence_threshold: float = 0.45
     yolo_model_path: str = "yolov8n.pt"
